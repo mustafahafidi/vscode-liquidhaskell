@@ -71,13 +71,14 @@ function registerDiagnostics(contest: vscode.ExtensionContext) {
       let diagnostics: vscode.Diagnostic[] = [];
 
       //   get file json content
-      const fileContent = fs.readFileSync(path, { encoding: "utf8" });
       let LHJsonReport = undefined;
       // LH writes multiple times to the same file, parsing might fail during middle writes
       while (!LHJsonReport) {
         try {
+          const fileContent = fs.readFileSync(path, { encoding: "utf8" });
           LHJsonReport = JSON.parse(fileContent);
         } catch (e) {
+          console.log("cannot parse json");
           await new Promise((r) => setTimeout(r, 500));
         }
       }
