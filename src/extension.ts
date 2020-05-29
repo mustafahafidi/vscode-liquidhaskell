@@ -12,15 +12,16 @@ export function activate(context: vscode.ExtensionContext) {
 
   fileWatcher = chokidar
     .watch(`${currentPath}/**/.liquid/*.json`)
-    .on("all", (event, path) => {
+    .on("all", async (event, path) => {
       console.log("Modified .liquid folder", event, path);
       //   get file changed
       const filePath = path.replace(".liquid/", "").replace(".json", "");
       let diagnostics: vscode.Diagnostic[] = [];
 
+      await new Promise((r) => setTimeout(r, 1000));
       //   get file json content
       const fileContent = fs.readFileSync(path, { encoding: "utf8" });
-      console.log("parsing", fileContent);
+      // console.log("parsing", fileContent);
       const LHJsonReport = JSON.parse(fileContent);
 
       LHJsonReport.errors.forEach((error: any) => {
