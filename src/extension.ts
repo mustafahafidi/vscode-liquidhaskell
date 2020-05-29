@@ -23,13 +23,12 @@ function registerCommands(context: vscode.ExtensionContext) {
   const liquidCommand = configuration.get("command");
 
   // register on save
-  if (configuration.get("runOnSave")) {
-    vscode.workspace.onDidSaveTextDocument((document) => {
-      if (document.languageId === "haskell") {
-        vscode.commands.executeCommand(command);
-      }
-    });
-  }
+
+  vscode.workspace.onDidSaveTextDocument((document) => {
+    if (document.languageId === "haskell" && configuration.get("runOnSave")) {
+      vscode.commands.executeCommand(command);
+    }
+  });
 
   const commandHandler = () => {
     const currentOpenFile = vscode.window.activeTextEditor?.document.fileName;
