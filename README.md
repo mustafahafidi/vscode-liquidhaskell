@@ -4,4 +4,6 @@ This (very simple) extension shows [LiquidHaskell's](https://github.com/ucsd-pro
 
 ## Requirements
 
+`liquid` must be running on the background.
+
 This extension is simply based on the `.liquid` dirs that LiquidHaskell generates, so make sure to not delete those if you want to see the errors.

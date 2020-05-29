@@ -3,7 +3,10 @@
 	"displayName": "LiquidHaskell",
 	"description": "Show liquidhaskell's errors directly in vscode's diagnostics",
 	"version": "1.0.0",
-	"publisher": "MustafaHafidi",
+	"publisher": "mustafahafidi",
+	"repository": {
+		"url": "https://github.com/mustafahafidi/vscode-liquidhaskell"
+	},
 	"engines": {
 		"vscode": "^1.45.0"
 	},
@@ -13,6 +16,7 @@
 	"activationEvents": [
 		"onLanguage:haskell"
 	],
+	"icon": "icon.png",
 	"main": "./out/extension.js",
 	"contributes": {},
 	"scripts": {
