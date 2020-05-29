@@ -2,9 +2,10 @@
 	"name": "liquidhaskell-diagnostics",
 	"displayName": "LiquidHaskell",
 	"description": "Show liquidhaskell's errors directly in vscode's diagnostics",
-	"version": "1.1.1",
+	"version": "1.2.0",
 	"publisher": "mustafahafidi",
 	"repository": {
+		"type": "git",
 		"url": "https://github.com/mustafahafidi/vscode-liquidhaskell"
 	},
 	"engines": {
@@ -14,11 +15,50 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onLanguage:haskell"
+		"onLanguage:haskell",
+		"workspaceContains:**/*.hs"
 	],
-	"icon": "icon.png",
+	"icon": "images/icon.png",
 	"main": "./out/extension.js",
-	"contributes": {},
+	"contributes": {
+		"configuration": {
+			"title": "liquidhaskell-diagnostics",
+			"type": "object",
+			"properties": {
+				"liquidhaskell.command": {
+					"type": "string",
+					"default": "stack exec -- liquid",
+					"description": "The command used to run liquidhaskell on open file"
+				},
+				"liquidhaskell.runOnSave": {
+					"type": "boolean",
+					"default": true,
+					"description": "Whether to run LiquidHaskell on save"
+				},
+				"liquidhaskell.showTerminalOnRun": {
+					"type": "boolean",
+					"default": true,
+					"description": "Whether to show the terminal LiquidHaskell is running on"
+				}
+			}
+		},
+		"commands": [
+			{
+				"title": "Run LH",
+				"command": "liquidhaskell.runLiquid",
+				"enablement": "resourceLangId == haskell"
+			}
+		],
+		"menus": {
+			"editor/title": [
+				{
+					"when": "resourceLangId == haskell",
+					"command": "liquidhaskell.runLiquid",
+					"group": "navigation"
+				}
+			]
+		}
+	},
 	"scripts": {
 		"vscode:prepublish": "yarn run compile",
 		"compile": "tsc -p ./",

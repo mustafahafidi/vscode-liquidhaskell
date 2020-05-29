@@ -3,8 +3,61 @@ import * as chokidar from "chokidar";
 import * as fs from "fs";
 
 let fileWatcher: chokidar.FSWatcher;
+let terminal: vscode.Terminal;
+let configuration = vscode.workspace.getConfiguration("liquidhaskell");
 
 export function activate(context: vscode.ExtensionContext) {
+  registerDiagnostics(context);
+  registerCommands(context);
+  // update configuration on change
+  vscode.workspace.onDidChangeConfiguration(() => {
+    configuration = vscode.workspace.getConfiguration("liquidhaskell");
+  });
+}
+export function deactivate() {
+  fileWatcher.close();
+}
+
+function registerCommands(context: vscode.ExtensionContext) {
+  const command = "liquidhaskell.runLiquid";
+  const liquidCommand = configuration.get("command");
+
+  // register on save
+  if (configuration.get("runOnSave")) {
+    vscode.workspace.onDidSaveTextDocument((document) => {
+      if (document.languageId === "haskell") {
+        vscode.commands.executeCommand(command);
+      }
+    });
+  }
+
+  const commandHandler = () => {
+    const currentOpenFile = vscode.window.activeTextEditor?.document.fileName;
+    if (currentOpenFile) {
+      const message = vscode.window.setStatusBarMessage(
+        "Running LiquidHaskell on " + currentOpenFile.replace(/^.*[\\\/]/, "")
+      );
+      if (!terminal) {
+        terminal = vscode.window.createTerminal("LiquidHaskell");
+      }
+      if (configuration.get("showTerminalOnRun")) {
+        terminal.show();
+      }
+      terminal.sendText(`${liquidCommand} ${currentOpenFile}`);
+      message.dispose();
+    } else {
+      vscode.window.showErrorMessage(
+        "LiquidHaskell-diagnostics: No haskell file currently opened"
+      );
+    }
+  };
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(command, commandHandler)
+  );
+}
+
+function registerDiagnostics(contest: vscode.ExtensionContext) {
   const diagnosticCollection = vscode.languages.createDiagnosticCollection(
     "liquidhaskell"
   );
@@ -18,11 +71,17 @@ export function activate(context: vscode.ExtensionContext) {
       const filePath = path.replace(".liquid/", "").replace(".json", "");
       let diagnostics: vscode.Diagnostic[] = [];
 
-      await new Promise((r) => setTimeout(r, 1000));
       //   get file json content
       const fileContent = fs.readFileSync(path, { encoding: "utf8" });
-      // console.log("parsing", fileContent);
-      const LHJsonReport = JSON.parse(fileContent);
+      let LHJsonReport = undefined;
+      // LH writes multiple times to the same file, parsing might fail during middle writes
+      while (!LHJsonReport) {
+        try {
+          LHJsonReport = JSON.parse(fileContent);
+        } catch (e) {
+          await new Promise((r) => setTimeout(r, 500));
+        }
+      }
 
       LHJsonReport.errors.forEach((error: any) => {
         const range: vscode.Range = new vscode.Range(
@@ -50,8 +109,4 @@ export function activate(context: vscode.ExtensionContext) {
       }
       diagnosticCollection.set(vscode.Uri.file(filePath), diagnostics);
     });
-}
-
-export function deactivate() {
-  fileWatcher.close();
 }
